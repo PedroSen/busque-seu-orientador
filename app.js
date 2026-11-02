@@ -1,164 +1,156 @@
-const WORKBOOK_URL = 'https://raw.githubusercontent.com/PedroSen/busque-seu-orientador/main/Tags%20TCCs%20IC(1).xlsx';
+const WORKBOOK_URL =
+  'https://raw.githubusercontent.com/PedroSen/busque-seu-orientador/main/Tags%20TCCs%20IC(1).xlsx';
+
+const form = document.querySelector('#search-form');
 const searchInput = document.querySelector('#specialty-search');
-const searchForm = document.querySelector('#search-form');
+const suggestions = document.querySelector('#specialty-options');
 const results = document.querySelector('#results');
-const statusBox = document.querySelector('#status');
 const resultsCount = document.querySelector('#results-count');
-const options = document.querySelector('#specialty-options');
-const popularTopics = document.querySelector('#popular-topics');
+const status = document.querySelector('#status');
+
 let professors = [];
-let allSpecialties = [];
 
-function normalize(value) {
-  return String(value ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('pt-BR').trim();
+function normalize(text) {
+  return String(text)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim();
 }
 
-function parseWeight(value) {
-  if (typeof value === 'number') return value;
-  const parsed = Number(String(value ?? '').trim().replace(',', '.'));
-  return Number.isFinite(parsed) ? parsed : 0;
-}
-
-function readWorkbook(buffer) {
-  const workbook = XLSX.read(buffer, { type: 'array' });
+function readProfessors(workbook) {
   return workbook.SheetNames.map((name) => {
-    const rows = XLSX.utils.sheet_to_json(workbook.Sheets[name], { header: 1, defval: '' });
-    const specialties = rows.flatMap((row, index) => {
-      const label = String(row[0] ?? '').trim();
-      const weight = parseWeight(row[1]);
-      if (!label || weight <= 1) return [];
-      // Permite que a planilha tenha uma linha de cabeçalho, sem tratar "Especialidade" como tag.
-      if (index === 0 && /especialidade|specialty/i.test(label)) return [];
-      return [{ name: label, normalized: normalize(label), weight }];
+    const rows = XLSX.utils.sheet_to_json(workbook.Sheets[name], {
+      header: 1,
+      defval: '',
     });
-    return { name: name.trim(), specialties };
-  }).filter((professor) => professor.name && professor.specialties.length);
+
+    const specialties = rows
+      .map(([name, weight], index) => {
+        const label = String(name).trim();
+        const score = Number(String(weight).replace(',', '.'));
+        const isHeader = index === 0 && /especialidade/i.test(label);
+
+        if (!label || isHeader || !Number.isFinite(score) || score <= 1) {
+          return null;
+        }
+
+        return { name: label, normalizedName: normalize(label), weight: score };
+      })
+      .filter(Boolean);
+
+    return { name, specialties };
+  }).filter((professor) => professor.specialties.length > 0);
 }
 
-function setStatus(message, kind = '', visible = true) {
-  statusBox.className = `status ${kind}`.trim();
-  statusBox.innerHTML = kind === 'loading' ? '<span class="loader" aria-hidden="true"></span>' : '';
-  statusBox.append(document.createTextNode(message));
-  statusBox.hidden = !visible;
+function getSearchTerms() {
+  return searchInput.value
+    .split(',')
+    .map(normalize)
+    .filter(Boolean);
 }
 
-function queryParts(query) {
-  return query.split(',').map(normalize).filter(Boolean);
-}
+function findMatches(terms) {
+  return professors
+    .map((professor) => {
+      const specialties = professor.specialties.filter((specialty) =>
+        terms.some((term) => specialty.normalizedName.includes(term)),
+      );
+      const score = specialties.reduce((total, item) => total + item.weight, 0);
 
-function matchesQuery(specialty, parts) {
-  return parts.some((part) => {
-    if (specialty.normalized.includes(part)) return true;
-    const words = part.split(/\s+/).filter(Boolean);
-    return words.length > 1 && words.every((word) => specialty.normalized.includes(word));
-  });
-}
-
-function initials(name) {
-  const words = name.split(/\s+/).filter(Boolean);
-  return (words.length > 1 ? words[0][0] + words[words.length - 1][0] : name.slice(0, 2)).toUpperCase();
-}
-
-function escapeHTML(value) {
-  return String(value).replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
-}
-
-function renderCards(query = '') {
-  const parts = queryParts(query);
-  const ranked = professors.map((professor) => {
-    const matched = parts.length ? professor.specialties.filter((specialty) => matchesQuery(specialty, parts)) : [];
-    const score = matched.reduce((sum, specialty) => sum + specialty.weight, 0);
-    return { ...professor, matched, score };
-  }).filter((professor) => !parts.length || professor.score > 0)
+      return { ...professor, matchedSpecialties: specialties, score };
+    })
+    .filter((professor) => terms.length === 0 || professor.score > 0)
     .sort((a, b) => b.score - a.score || a.name.localeCompare(b.name, 'pt-BR'));
+}
+
+function showStatus(message, isError = false) {
+  status.hidden = !message;
+  status.textContent = message;
+  status.classList.toggle('error', isError);
+}
+
+function createCard(professor, terms) {
+  const card = document.createElement('article');
+  const specialties = terms.length
+    ? professor.matchedSpecialties
+    : professor.specialties.slice(0, 4);
+  const tags = specialties
+    .map((item) => `<span class="specialty-tag">${item.name}</span>`)
+    .join('');
+  const score = terms.length
+    ? `<span class="match-score">Peso ${professor.score}</span>`
+    : '';
+
+  card.className = 'professor-card';
+  card.innerHTML = `
+    <div class="card-heading">
+      <div>
+        <p class="card-label">PROFESSOR(A)</p>
+        <h3>${professor.name}</h3>
+      </div>
+      ${score}
+    </div>
+    <div class="specialties">${tags}</div>
+  `;
+
+  return card;
+}
+
+function renderResults() {
+  const terms = getSearchTerms();
+  const matches = findMatches(terms);
 
   results.replaceChildren();
-  resultsCount.textContent = parts.length
-    ? `${ranked.length} ${ranked.length === 1 ? 'professor encontrado' : 'professores encontrados'}`
-    : `${professors.length} ${professors.length === 1 ? 'professor cadastrado' : 'professores cadastrados'}`;
+  resultsCount.textContent = terms.length
+    ? `${matches.length} ${matches.length === 1 ? 'resultado' : 'resultados'}`
+    : `${matches.length} ${matches.length === 1 ? 'professor' : 'professores'}`;
 
-  if (!ranked.length) {
-    setStatus(parts.length ? 'Não encontramos professores para esse tema. Tente outro termo ou uma área mais ampla.' : 'Nenhum professor com especialidades válidas foi encontrado na planilha.', 'empty');
+  if (matches.length === 0) {
+    showStatus('Nenhum professor encontrado. Tente buscar por outra especialidade.');
     return;
   }
-  setStatus('', '', false);
 
-  ranked.forEach((professor, index) => {
-    const visibleTags = parts.length ? professor.matched : professor.specialties.slice(0, 3);
-    const extraCount = parts.length ? 0 : Math.max(0, professor.specialties.length - visibleTags.length);
-    const card = document.createElement('article');
-    card.className = 'professor-card';
-    card.style.animationDelay = `${Math.min(index * 45, 270)}ms`;
-    card.innerHTML = `
-      <div class="card-top">
-        <div class="avatar" aria-hidden="true">${escapeHTML(initials(professor.name))}</div>
-        <h3 class="professor-name">${escapeHTML(professor.name)}</h3>
-        ${parts.length ? `<span class="match-score" title="Soma dos pesos das especialidades correspondentes">Relevância ${professor.score}</span>` : ''}
-      </div>
-      <p class="card-label">${parts.length ? 'ESPECIALIDADES CORRESPONDENTES' : 'ESPECIALIDADES EM DESTAQUE'}</p>
-      <div class="tags">${visibleTags.map((tag) => `<span class="tag" title="Peso ${tag.weight}">${escapeHTML(tag.name)}</span>`).join('')}${extraCount ? `<span class="tag tag-more">+${extraCount} outras</span>` : ''}</div>`;
-    results.append(card);
+  showStatus('');
+  matches.forEach((professor) => {
+    results.append(createCard(professor, terms));
   });
 }
 
-function setSearch(query) {
-  searchInput.value = query;
-  renderCards(query);
-  document.querySelector('#results-title').textContent = query.trim() ? 'Resultados da sua busca' : 'Professores orientadores';
-  document.querySelector('#results-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-}
+function addSuggestions() {
+  const specialties = new Set(
+    professors.flatMap((professor) =>
+      professor.specialties.map((specialty) => specialty.name),
+    ),
+  );
 
-function populateSuggestions() {
-  const totals = new Map();
-  professors.forEach((professor) => professor.specialties.forEach((specialty) => {
-    const current = totals.get(specialty.normalized);
-    if (!current) totals.set(specialty.normalized, { name: specialty.name, count: 1 });
-    else current.count += 1;
-  }));
-  allSpecialties = [...totals.values()].sort((a, b) => b.count - a.count || a.name.localeCompare(b.name, 'pt-BR'));
-  options.replaceChildren(...allSpecialties.map((item) => {
+  specialties.forEach((name) => {
     const option = document.createElement('option');
-    option.value = item.name;
-    return option;
-  }));
-  const popular = allSpecialties.slice(0, 5);
-  if (popular.length) {
-    popularTopics.hidden = false;
-    popularTopics.innerHTML = `<span class="topic-label">Áreas populares:</span>`;
-    popular.forEach((item) => {
-      const button = document.createElement('button');
-      button.type = 'button';
-      button.className = 'topic-chip';
-      button.textContent = item.name;
-      button.addEventListener('click', () => setSearch(item.name));
-      popularTopics.append(button);
-    });
-  }
+    option.value = name;
+    suggestions.append(option);
+  });
 }
 
-searchForm.addEventListener('submit', (event) => {
+form.addEventListener('submit', (event) => {
   event.preventDefault();
-  renderCards(searchInput.value);
-  document.querySelector('.results-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
-});
-searchInput.addEventListener('input', () => {
-  if (!searchInput.value.trim()) renderCards('');
+  renderResults();
 });
 
-async function init() {
+async function start() {
   try {
-    if (!window.XLSX) throw new Error('A biblioteca de leitura da planilha não foi carregada. Verifique sua conexão e atualize a página.');
     const response = await fetch(WORKBOOK_URL);
-    if (!response.ok) throw new Error(`Não foi possível carregar a planilha (HTTP ${response.status}).`);
-    professors = readWorkbook(await response.arrayBuffer());
-    if (!professors.length) throw new Error('A planilha foi carregada, mas não contém professores com especialidades de peso maior que 1.');
-    populateSuggestions();
-    renderCards();
+    if (!response.ok) throw new Error('Não foi possível carregar a planilha.');
+
+    const data = await response.arrayBuffer();
+    const workbook = XLSX.read(data, { type: 'array' });
+    professors = readProfessors(workbook);
+
+    addSuggestions();
+    renderResults();
   } catch (error) {
     console.error(error);
-    setStatus(`${error.message} Confira se a planilha está disponível e tente novamente.`, 'error');
-    resultsCount.textContent = '';
+    showStatus('Não foi possível carregar os professores. Tente novamente mais tarde.', true);
   }
 }
 
-init();
+start();
