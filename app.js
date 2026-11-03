@@ -1,5 +1,5 @@
 const WORKBOOK_URL =
-  'https://raw.githubusercontent.com/PedroSen/busque-seu-orientador/main/professores.xlsx';
+  'https://raw.githubusercontent.com/PedroSen/busque-seu-orientador/main/Tags%20TCCs%20IC(1).xlsx';
 
 const form = document.querySelector('#search-form');
 const searchInput = document.querySelector('#specialty-search');
