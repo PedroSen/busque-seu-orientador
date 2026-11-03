@@ -1,5 +1,5 @@
 const WORKBOOK_URL =
-  '/professores.xlsx';
+  'https://raw.githubusercontent.com/PedroSen/busque-seu-orientador/main/professores.xlsx';
 
 const form = document.querySelector('#search-form');
 const searchInput = document.querySelector('#specialty-search');
