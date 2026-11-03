@@ -86,8 +86,8 @@ function createCard(professor, terms) {
   card.innerHTML = `
     <div class="card-heading">
       <div>
-        <p class="card-label">PROFESSOR(A)</p>
         <h3>${professor.name}</h3>
+        <p class="card-label" style="margin: 10px 0 0 2px">PROFESSOR(A) TITULAR</p>
       </div>
       ${score}
     </div>

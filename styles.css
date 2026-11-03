@@ -171,7 +171,7 @@ hr {
 .results-heading {
   display: flex;
   align-items: flex-end;
-  justify-content: space-between;
+  justify-content: baseline;
   gap: 16px;
   margin-bottom: 17px;
 }
@@ -191,19 +191,20 @@ hr {
 .results-count {
   margin: 0 0 4px;
   color: var(--text-muted);
-  font-size: 12px;
+  font-size: 0.8rem;
+  color: black;
 }
 
 .results-list {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
 }
 
 .professor-card {
-  min-height: 132px;
+  max-width: 700px;
   padding: 18px;
-  border: 1px solid var(--border);
+  border:  2px solid rgba(102, 102, 102, 0.75);
   border-radius: 7px;
   background: #fff;
 }
@@ -224,7 +225,7 @@ hr {
 .card-heading h3 {
   margin: 0;
   color: var(--green);
-  font-size: 16px;
+  font-size: 1.3rem;
   line-height: 1.4;
 }
 
@@ -247,10 +248,10 @@ hr {
 
 .specialty-tag {
   padding: 5px 8px;
-  border-radius: 4px;
+  border-radius: 6rem;
   background: var(--green-light);
   color: #49675a;
-  font-size: 10px;
+  font-size: 1rem;
 }
 
 .help-note {
