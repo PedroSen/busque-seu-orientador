@@ -7,14 +7,8 @@
   font-family: Arial, Helvetica, sans-serif;
   color: #233b34;
   background: #faf9f6;
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
   --green: #214f40;
   --green-light: #e8eee8;
-  --text-muted: #748078;
-  --border: #e5e6df;
-  --orange: #bf7942;
 }
 
 body {
@@ -266,35 +260,6 @@ hr {
 .links div {
     display: flex;
     flex-direction: column;
-}
-
-.help-note {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin: 45px 0 58px;
-  padding: 17px;
-  background: #eef1eb;
-}
-
-.help-mark {
-  display: grid;
-  width: 23px;
-  height: 23px;
-  flex: 0 0 23px;
-  place-items: center;
-  border-radius: 50%;
-  background: #dce5dc;
-  color: var(--green);
-  font-family: Georgia, 'Times New Roman', serif;
-  font-size: 14px;
-}
-
-.help-note p {
-  margin: 0;
-  color: #607066;
-  font-size: 11px;
-  line-height: 1.6;
 }
 
 @media (max-width: 1320px) {
