@@ -1,5 +1,5 @@
 const WORKBOOK_URL =
-  'https://raw.githubusercontent.com/PedroSen/busque-seu-orientador/main/Tags%20TCCs%20IC(1).xlsx';
+  'https://raw.githubusercontent.com/PedroSen/busque-seu-orientador/main/professores.xlsx';
 
 const form = document.querySelector('#search-form');
 const searchInput = document.querySelector('#specialty-search');
@@ -12,10 +12,6 @@ let professors = [];
 
 function normalize(text) {
   return String(text)
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .trim();
 }
 
 function readProfessors(workbook) {
@@ -27,8 +23,8 @@ function readProfessors(workbook) {
 
     const specialties = rows
       .map(([name, weight], index) => {
-        const label = String(name).trim();
-        const score = Number(String(weight).replace(',', '.'));
+        const label = String(name);
+        const score = Number(weight);
         const isHeader = index === 0 && /especialidade/i.test(label);
 
         if (!label || isHeader || !Number.isFinite(score) || score <= 1) {
@@ -147,7 +143,6 @@ form.addEventListener('submit', (event) => {
 });
 
 async function start() {
-  try {
     const response = await fetch(WORKBOOK_URL);
     if (!response.ok) throw new Error('Não foi possível carregar a planilha.');
 
@@ -157,10 +152,6 @@ async function start() {
 
     addSuggestions();
     renderResults();
-  } catch (error) {
-    console.error(error);
-    showStatus('Não foi possível carregar os professores. Tente novamente mais tarde.', true);
-  }
 }
 
 start();
