@@ -92,6 +92,16 @@ function createCard(professor, terms) {
       ${score}
     </div>
     <div class="specialties">${tags}</div>
+    <div class="links">
+        <div>
+            <h4>E-mail</h4>
+            <a></a>
+        </div>
+        <div>
+            <h4>Lattes</h4>
+            <a></a>
+        </div>
+    </div>
   `;
 
   return card;

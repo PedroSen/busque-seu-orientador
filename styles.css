@@ -207,6 +207,9 @@ hr {
   border:  2px solid rgba(102, 102, 102, 0.75);
   border-radius: 7px;
   background: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .card-heading {
@@ -252,6 +255,17 @@ hr {
   background: var(--green-light);
   color: #49675a;
   font-size: 1rem;
+}
+
+.links {
+    display: flex;
+    flex-direction: row;
+    gap: 40%;
+}
+
+.links div {
+    display: flex;
+    flex-direction: column;
 }
 
 .help-note {
