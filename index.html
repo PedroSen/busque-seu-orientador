@@ -13,68 +13,48 @@
     <script defer src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script defer src="app.js"></script>
   </head>
+
   <body>
-    <header class="site-header">
-      <a class="wordmark" href="#inicio">busque seu orientador</a>
-      <span class="header-note">ENCONTRE SUA ORIENTAÇÃO</span>
-    </header>
+    <div class="container">
+        <header class="site-header">
+            <h1 class="titulo1">UFRJ - Sistema de busca de orientadores acadêmicos</h1>
+        </header>
+        <hr>
 
-    <main id="inicio">
-      <section class="intro" aria-labelledby="page-title">
-        <p class="eyebrow">ORIENTAÇÃO PARA O SEU PROJETO</p>
-        <h1 id="page-title">Encontre um orientador<br>para a sua pesquisa.</h1>
-        <p class="intro-copy">
-          Busque por uma área de interesse e encontre professores que trabalham
-          com o tema do seu projeto.
-        </p>
-      </section>
+        <main id="inicio">
+        <section class="intro">
+            <h2 class="titulo2">Busque seu <span>Orientador</span></h2>
+        </section>
 
-      <section class="search-section" aria-label="Busca por especialidade">
         <form id="search-form" class="search-form" role="search">
-          <label for="specialty-search">ESPECIALIDADE</label>
-          <div class="search-controls">
-            <input
-              id="specialty-search"
-              name="q"
-              type="search"
-              list="specialty-options"
-              placeholder="Ex.: inteligência artificial"
-              autocomplete="off"
-            >
-            <datalist id="specialty-options"></datalist>
-            <button type="submit">Buscar <span aria-hidden="true">→</span></button>
-          </div>
-          <p class="search-hint">Você pode pesquisar mais de uma especialidade, separando-as por vírgula.</p>
+            <div class="search-controls">
+                <input
+                id="specialty-search"
+                name="q"
+                type="search"
+                list="specialty-options"
+                placeholder="🔍︎ Pesquisar área de interesse, nome, cargo..."
+                autocomplete="off"
+                >
+                <datalist id="specialty-options"></datalist>
+                <button type="submit">➜</button>
+            </div>
         </form>
-      </section>
 
-      <section class="results-section" aria-labelledby="results-title">
-        <div class="results-heading">
-          <div>
-            <p class="eyebrow">ENCONTRE SUA CONEXÃO</p>
-            <h2 id="results-title">Professores orientadores</h2>
-          </div>
-          <p id="results-count" class="results-count" aria-live="polite"></p>
-        </div>
 
-        <p id="status" class="status" role="status" aria-live="polite">
-          Carregando professores...
-        </p>
-        <div id="results" class="results-list"></div>
-      </section>
+        <section class="results-section">
+            <div class="results-heading">
+            <div>
+                <h2 id="results-title">Professores orientadores</h2>
+            </div>
+            <p id="results-count" class="results-count"></p>
+            </div>
 
-      <aside class="help-note">
-        <span class="help-mark" aria-hidden="true">i</span>
-        <p>
-          Os resultados consideram especialidades com peso maior que 1.
-          Pesos maiores indicam maior afinidade com o tema pesquisado.
-        </p>
-      </aside>
-    </main>
+            <div id="status" class="status" role="status"></div>
+            <div id="results" class="results-list"></div>
+        </section>
 
-    <footer class="site-footer">
-      <span>Busque seu orientador</span>
-      <span>Encontre a orientação certa para sua pesquisa.</span>
-    </footer>
+        </main>
+    </div>
   </body>
 </html>
