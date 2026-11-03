@@ -1,33 +1,33 @@
+//Fonte dos dados
 const WORKBOOK_URL =
-  'https://raw.githubusercontent.com/PedroSen/busque-seu-orientador/main/Tags%20TCCs%20IC(1).xlsx';
+  'https://raw.githubusercontent.com/PedroSen/busque-seu-orientador/main/areasprofessores.xlsx';
 const form = document.querySelector('#search-form');
-const searchInput = document.querySelector('#specialty-search');
-const suggestions = document.querySelector('#specialty-options');
+const searchInput = document.querySelector('#especialidade-search');
+const suggestions = document.querySelector('#especialidade-options');
 const results = document.querySelector('#results');
 const resultsCount = document.querySelector('#results-count');
 const status = document.querySelector('#status');
 
-let professors = [];
+//Lista de professores
+let professores = [];
 
+//Torna o texto da planilha uma string para o programa poder trabalhar com ele
 function normalize(text) {
   return String(text)
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .trim();
 }
 
-function readProfessors(workbook) {
+//retorna o nome de cada aba como o nome do professor
+function readProfessores(workbook) {
   return workbook.SheetNames.map((name) => {
     const rows = XLSX.utils.sheet_to_json(workbook.Sheets[name], {
       header: 1,
       defval: '',
     });
 
-    const specialties = rows
+    const especialidades = rows
       .map(([name, weight], index) => {
-        const label = String(name).trim();
-        const score = Number(String(weight).replace(',', '.'));
+        const label = String(name);
+        const score = Number(String(weight));
         const isHeader = index === 0 && /especialidade/i.test(label);
 
         if (!label || isHeader || !Number.isFinite(score) || score <= 1) {
@@ -38,10 +38,11 @@ function readProfessors(workbook) {
       })
       .filter(Boolean);
 
-    return { name, specialties };
-  }).filter((professor) => professor.specialties.length > 0);
+    return { name, especialidades };
+  }).filter((professor) => professor.especialidades.length > 0);
 }
 
+//Retorna o termo buscado pelo usuário
 function getSearchTerms() {
   return searchInput.value
     .split(',')
@@ -49,15 +50,16 @@ function getSearchTerms() {
     .filter(Boolean);
 }
 
+//Busca o termo
 function findMatches(terms) {
-  return professors
+  return professores
     .map((professor) => {
-      const specialties = professor.specialties.filter((specialty) =>
-        terms.some((term) => specialty.normalizedName.includes(term)),
+      const especialidades = professor.especialidades.filter((especialidade) =>
+        terms.some((term) => especialidade.normalizedName.includes(term)),
       );
-      const score = specialties.reduce((total, item) => total + item.weight, 0);
+      const score = especialidades.reduce((total, item) => total + item.weight, 0);
 
-      return { ...professor, matchedSpecialties: specialties, score };
+      return { ...professor, matchedespecialidades: especialidades, score };
     })
     .filter((professor) => terms.length === 0 || professor.score > 0)
     .sort((a, b) => b.score - a.score || a.name.localeCompare(b.name, 'pt-BR'));
@@ -71,11 +73,11 @@ function showStatus(message, isError = false) {
 
 function createCard(professor, terms) {
   const card = document.createElement('article');
-  const specialties = terms.length
-    ? professor.matchedSpecialties
-    : professor.specialties.slice(0, 4);
-  const tags = specialties
-    .map((item) => `<span class="specialty-tag">${item.name}</span>`)
+  const especialidades = terms.length
+    ? professor.matchedespecialidades
+    : professor.especialidades.slice(0, 4);
+  const tags = especialidades
+    .map((item) => `<span class="especialidade-tag">${item.name}</span>`)
     .join('');
   const score = terms.length
     ? `<span class="match-score">Peso ${professor.score}</span>`
@@ -90,7 +92,7 @@ function createCard(professor, terms) {
       </div>
       ${score}
     </div>
-    <div class="specialties">${tags}</div>
+    <div class="especialidades">${tags}</div>
     <div class="links">
         <div>
             <h4>E-mail</h4>
@@ -127,13 +129,13 @@ function renderResults() {
 }
 
 function addSuggestions() {
-  const specialties = new Set(
-    professors.flatMap((professor) =>
-      professor.specialties.map((specialty) => specialty.name),
+  const especialidades = new Set(
+    professores.flatMap((professor) =>
+      professor.especialidades.map((especialidade) => especialidade.name),
     ),
   );
 
-  specialties.forEach((name) => {
+  especialidades.forEach((name) => {
     const option = document.createElement('option');
     option.value = name;
     suggestions.append(option);
@@ -146,20 +148,13 @@ form.addEventListener('submit', (event) => {
 });
 
 async function start() {
-  try {
     const response = await fetch(WORKBOOK_URL);
-    if (!response.ok) throw new Error('Não foi possível carregar a planilha.');
-
     const data = await response.arrayBuffer();
     const workbook = XLSX.read(data, { type: 'array' });
-    professors = readProfessors(workbook);
+    professores = readProfessores(workbook);
 
     addSuggestions();
     renderResults();
-  } catch (error) {
-    console.error(error);
-    showStatus('Não foi possível carregar os professores. Tente novamente mais tarde.', true);
-  }
 }
 
 start();
