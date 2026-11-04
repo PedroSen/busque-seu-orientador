@@ -11,15 +11,14 @@
     <title>Busque seu orientador</title>
     <link rel="stylesheet" href="styles.css">
     <script defer src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    <script defer src="app.js"></script>
   </head>
 
   <body>
     <div class="container">
-        <header class="site-header">
+        <!--<header class="site-header">
             <h1 class="titulo1">UFRJ - Sistema de busca de orientadores acadêmicos</h1>
         </header>
-        <hr>
+        <hr>-->
 
         <main id="inicio">
         <section class="intro">
@@ -28,19 +27,11 @@
 
         <form id="search-form" class="search-form" role="search">
             <div class="search-controls">
-                <input
-                id="specialty-search"
-                name="q"
-                type="search"
-                list="specialty-options"
-                placeholder="🔍︎ Pesquisar área de interesse, nome, cargo..."
-                autocomplete="off"
-                >
-                <datalist id="specialty-options"></datalist>
+                <input id="especialidade-search" name="q" type="search" list="especialidade-options" placeholder="🔍︎ Pesquisar área de interesse, nome, cargo...">
+                <datalist id="especialidade-options"></datalist>
                 <button type="submit">➜</button>
             </div>
         </form>
-
 
         <section class="results-section">
             <div class="results-heading">
@@ -56,5 +47,6 @@
 
         </main>
     </div>
+    <script defer src="script.js"></script>
   </body>
 </html>

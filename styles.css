@@ -15,25 +15,35 @@ body {
   margin: 0;
 }
 
-.site-header,
 main {
   width: 100%;
   margin-inline: auto;
-  margin-bottom: 4rem;
+  padding-bottom: 2rem;
 }
 
 .site-header {
-  height: 76px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin: 1rem 1rem 2rem 1rem;
+  min-height: 84px;
+  padding: 1rem;
+  background: linear-gradient(to left, #324d5f 25%,#345264 50%,#416175 75%);
+  border: 1px solid black;
+  border-left: none;
+  border-radius: 500px;
+  box-shadow: 0 4px 3px rgba(0,0,0, 1);
+  width: 99.5%;
+  margin-left: 1px;
 }
 
 .titulo1 {
-    color: #2C2C2C;
-    font-size: 3rem;
-    font-weight: 500;
+  color: white;
+  font-family:Verdana, Geneva, Tahoma, sans-serif;
+  font-size: 3rem;
+  width: 100%;
+  text-align: center;
+  font-weight: 600;
+  text-shadow: 0px 3px 5px rgba(0, 0, 0, 0.9);
+  margin: 10px;
 }
 
 .card-label {
@@ -44,10 +54,6 @@ main {
 
 .header-note {
   color: var(--text-muted);
-}
-
-hr {
-    color: rgb(168, 167, 167);
 }
 
 .intro {
@@ -61,7 +67,7 @@ hr {
     flex: 1 0 0;
     border-radius: 0 3rem 3rem 0;
     background: #2C2C2C;
-    margin-top: 4rem;
+    margin-top: 2rem;
 }
 
 .titulo2  {
@@ -70,6 +76,7 @@ hr {
     font-style: normal;
     font-weight: 500;
     text-align: end;
+    margin: 30px 0 30px 0;
 }
 
 .titulo2 span {
@@ -96,7 +103,7 @@ hr {
 
 .search-form {
   display: flex;
-  margin-top: 5rem;
+  margin-top: 3rem;
   justify-content: center;
   align-items: center;
   justify-items: center;
@@ -158,8 +165,7 @@ hr {
 }
 
 .results-section {
-  padding-top: 55px;
-  margin: 0 1rem;
+  margin: 3rem 1rem;
 }
 
 .results-heading {
@@ -226,28 +232,19 @@ hr {
   line-height: 1.4;
 }
 
-.match-score {
-  flex-shrink: 0;
-  padding: 5px 8px;
-  border-radius: 4px;
-  background: #f5eee7;
-  color: #8b5d37;
-  font-size: 10px;
-  font-weight: 700;
-}
-
-.specialties {
+.especialidades {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
   margin-top: 14px;
+  font-weight: bold;
 }
 
-.specialty-tag {
+.especialidade-tag {
   padding: 5px 8px;
   border-radius: 6rem;
-  background: var(--green-light);
-  color: #49675a;
+  background: #2a6451;
+  color: white;
   font-size: 1rem;
 }
 
@@ -269,9 +266,15 @@ hr {
 }
 
 @media (max-width: 620px) {
+  .site-header {
+    width: min(96%, 1200px);
+    padding: 1rem 1.25rem;
+    border-left: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 22px;
+  }
 
   .titulo1 {
-    font-size: 2rem;
+    font-size: 1.5rem;
   }
 
   .intro h2 {
