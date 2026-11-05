@@ -7,30 +7,23 @@ const form = document.querySelector('#search-form');
 const searchInput = document.querySelector('#especialidade-search');
 const sugestoes = document.querySelector('#especialidade-options');
 const results = document.querySelector('#results');
-const resultsCount = document.querySelector('#results-count');
 
-let professors = [];
+let professores = [];
 
 //Transforma os inputs do usuário em strings
 function normalizar(text) {
   return String(text)
 }
 
-//Transforma as abas do excel em objetos
-function readProfessors(workbook) {
-  // Percorre cada aba do arquivo Excel e cria um objeto por professor.
+function criarProfessores(workbook) {
   return workbook.SheetNames.map((nome) => {
-    // Converte a planilha atual para uma matriz de linhas, usando a primeira linha como cabeçalho.
     const rows = XLSX.utils.sheet_to_json(workbook.Sheets[nome], {
-      // Define que cada linha será um array, sem cabeçalho fixo.
       header: 1,
-      // Define valor padrão para células vazias.
       defval: '',
     });
 
-    // Filtra as linhas e monta um array de especialidades válidas.
+    //Cria um objeto especialidades que será um dos atributos do objeto professor
     const especialidades = rows
-      // Para cada linha, extrai nome e peso da especialidade.
       .map(([nome, peso], index) => {
         const label = String(nome);
         const score = Number(peso);
@@ -39,109 +32,86 @@ function readProfessors(workbook) {
           return null;
         }
 
-        // Retorna um objeto "especialidade" com o nome e o peso da especialidade.
         return { nome: String(label), peso: score };
       })
-      // Remove os itens nulos gerados por especialidades inválidas.
       .filter(Boolean);
 
-    // Retorna um objeto "professor" com o nome da aba/professor e suas especialidades
-    return { nome, especialidades };
+    const lattes = String(rows[0][3]);
+    const email = String(rows[0][2]);
+
+    //Retorna um objeto "professor" com o nome da aba/professor e suas especialidades
+    return { nome, especialidades, lattes, email };
   }).filter((professor) => professor.especialidades.length > 0);
 }
 
-// Obtém os termos digitados pelo usuário na busca separados por vírgulas.
-function getSearchTerms() {
-  // Lê o texto digitado no campo de busca.
+// Obtém os termos digitados pelo usuário
+function obterBusca() {
   return searchInput.value
-    // Divide a string em termos usando a vírgula como separador.
     .split(',')
-    // Normaliza cada termo para padronizar a comparação.
-    .map(normalizar)
-    // Remove termos vazios para evitar buscas sem valor.
     .filter(Boolean);
 }
 
 // Busca os professores que melhor combinam com os termos informados.
-function encontrarMatches(terms) {
-  // Mapeia todos os professores para calcular sua pontuação.
-  return professors
+function encontrarMatches(termos) {
+  return professores
+  //a função abaixo itera por todos os professores e verifica se o termo buscado está entre suas especialidades, calcula os scores com base no termo e retorna os professores com scores maiores que 0
     .map((professor) => {
-      // Filtra apenas as especialidades que contêm algum termo buscado.
       const especialidades = professor.especialidades.filter((especialidade) =>
-        // Verifica se pelo menos um termo está contido no nome normalizado da especialidade.
-        terms.some((term) => especialidade.nome.includes(term)),
+        termos.some((termo) => especialidade.nome.includes(termo)),
       );
-      // Soma os pesos das especialidades compatíveis para calcular a relevância do professor.
       const score = especialidades.reduce((total, item) => total + item.peso, 0);
-
-      // Retorna o professor com suas especialidades encontradas e a pontuação total.
       return { ...professor, matchEspecialidades: especialidades, score };
     })
-    // Se houver termos de busca, mantém apenas professores com pontuação maior que zero; se não houver, mostra todos.
-    .filter((professor) => terms.length === 0 || professor.score > 0)
-    // Ordena os professores pela pontuação mais alta primeiro.
+    .filter((professor) => termos.length === 0 || professor.score > 0)
     .sort((a, b) => b.score - a.score);
 }
 
-// Cria um card HTML para exibir um professor na tela.
-function createCard(professor, terms) {
-  // Cria um novo elemento div para representar o professor.
+// Cria um card HTML para exibir um professor na tela
+function createCard(professor, termos) {
   const card = document.createElement('div');
   // Define quais especialidades serão exibidas: as que deram match se houver busca, ou as quatro primeiras em caso de listagem geral.
-  const especialidades = terms.length
+  const especialidades = termos.length
     ? professor.matchEspecialidades
     : professor.especialidades.slice(0, 4);
-  // Gera os elementos HTML de tags para cada especialidade.
+
   const tags = especialidades
     .map((item) => `<span class="especialidade-tag">${item.nome}</span>`)
     .join('');
-  // Se houver busca, exibe a pontuação do professor; caso contrário, não mostra nada.
-  const score = terms.length
-    ? `<span class="match-score">Peso ${professor.score}</span>`
-    : '';
 
-  // Define a classe CSS do card para estilizar a interface.
   card.className = 'professor-card';
-  // Define o conteúdo interno do card com o nome do professor, sua classificação e as especialidades.
   card.innerHTML = `
     <div class="card-heading">
       <div>
         <h3>${professor.nome}</h3>
         <p class="card-label" style="margin: 10px 0 0 2px">PROFESSOR(A) TITULAR</p>
       </div>
-      ${score}
     </div>
     <div class="especialidades">${tags}</div>
     <div class="links">
-        <div>
+        <div class="div-email">
             <h4>E-mail</h4>
-            <a></a>
+            <a href = mailto:${professor.email}>${professor.email}</a>
         </div>
-        <div>
+        <div class="div-lattes">
             <h4>Lattes</h4>
-            <a></a>
+            <a href=${professor.lattes}>${professor.lattes}</a>
         </div>
     </div>
   `;
-
-  // Retorna o elemento pronto para ser inserido na página.
   return card;
 }
 
-// Exibe na tela os resultados filtrados de acordo com a busca.
+// exibe na tela os resultados filtrados de acordo com a busca.
 function exibirResultados() {
-  // Obtém os termos da busca.
-  const terms = getSearchTerms();
-  // Busca os professores que combinam com esses termos.
-  const matches = encontrarMatches(terms);
+  const termos = obterBusca();
+  const matches = encontrarMatches(termos);
 
   // Limpa o container de resultados antes de preencher novamente.
   results.replaceChildren();
 
   // Para cada professor encontrado, cria um card e o adiciona na página.
   matches.forEach((professor) => {
-    results.append(createCard(professor, terms));
+    results.append(createCard(professor, termos));
   });
 }
 
@@ -150,27 +120,22 @@ function addSugestoes() {
   // Cria um conjunto para remover especialidades duplicadas.
   const especialidades = new Set(
     // Para cada professor, pega todas as especialidades e transforma em um único array.
-    professors.flatMap((professor) =>
+    professores.flatMap((professor) =>
       professor.especialidades.map((especialidade) => especialidade.nome),
     ),
   );
 
   // Para cada especialidade única, cria um option dentro do select de sugestões.
   especialidades.forEach((nome) => {
-    // Cria um elemento <option> para a lista de sugestões.
     const option = document.createElement('option');
-    // Define o valor exibido e enviado pela opção.
     option.value = nome;
-    // Adiciona a opção ao contêiner de sugestões.
     sugestoes.append(option);
   });
 }
 
-// Escuta o evento de envio do formulário para executar a busca.
+//Realiza a busca quando o usuário insere um termo
 form.addEventListener('submit', (event) => {
-  // Impede o comportamento padrão do formulário de recarregar a página.
   event.preventDefault();
-  // Chama a função que mostra os resultados relevantes.
   exibirResultados();
 });
 
@@ -181,11 +146,10 @@ async function start() {
     // Lê o arquivo Excel em memória usando a biblioteca XLSX.
     const workbook = XLSX.read(data, { type: 'array' });
     // Armazena os professores carregados no array global.
-    professors = readProfessors(workbook);
+    professores = criarProfessores(workbook);
 
     addSugestoes();
     exibirResultados();
 }
 
-//Executa a função principal ao acessar a página
 start();
