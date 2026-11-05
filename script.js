@@ -83,7 +83,6 @@ function createCard(professor, termos) {
     <div class="card-heading">
       <div>
         <h3>${professor.nome}</h3>
-        <p class="card-label" style="margin: 10px 0 0 2px">PROFESSOR(A) TITULAR</p>
       </div>
     </div>
     <div class="especialidades">${tags}</div>
