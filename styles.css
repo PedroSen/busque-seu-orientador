@@ -251,12 +251,34 @@ main {
 .links {
     display: flex;
     flex-direction: row;
-    gap: 40%;
 }
 
 .links div {
     display: flex;
     flex-direction: column;
+    width: 50%;
+}
+
+.links div h4 {
+    margin: 2rem 0 0.7rem 0;
+}
+
+.links .div-email {
+    display: flex;
+    flex-direction: column;
+    width: 30%;
+}
+
+.links .div-lattes {
+    display: flex;
+    flex-direction: column;
+    width: 70%;
+}
+
+.links div a {
+    font-style: none;
+    font-weight: bold;
+    color: #2a6451;
 }
 
 @media (max-width: 1320px) {
